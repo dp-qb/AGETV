@@ -1,0 +1,18 @@
+# view AndroidManifest.xml #generated:60
+-keep class com.age.Detail { <init>(...); }
+
+# view AndroidManifest.xml #generated:27
+-keep class com.age.MainActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:44
+-keep class com.age.Player { <init>(...); }
+
+# onClick res/layout/main.xml #generated:39
+-keepclassmembers class * { *** leibie(...); }
+
+# onClick res/layout/main.xml #generated:25
+-keepclassmembers class * { *** lisi(...); }
+
+# onClick res/layout/main.xml #generated:32
+-keepclassmembers class * { *** weekly(...); }
+

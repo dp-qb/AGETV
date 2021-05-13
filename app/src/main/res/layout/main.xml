@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:gravity="top">
+
+	<LinearLayout
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/顶栏"
+		android:background="#66000000"
+		android:gravity="clip_horizontal">
+
+		<EditText
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:imeOptions="actionSearch"
+			android:singleLine="true"
+			android:ems="10"
+			android:id="@+id/edit"/>
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="历史记录"
+			android:onClick="lisi"
+			android:background="@drawable/button_style"
+			android:id="@+id/lisi"/>
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text=" 每周放送列表 "
+			android:onClick="weekly"
+			android:background="@drawable/button_style"/>
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="分类"
+			android:onClick="leibie"
+			android:background="@drawable/button_style"/>
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="新播放器测试"
+			android:onClick="neplay"
+			android:background="@drawable/button_style"/>
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="这是一段很长的废话示例"
+			android:id="@+id/txt"/>
+
+	</LinearLayout>
+
+	<ScrollView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:id="@+id/longbox"
+		android:background="#33000000">
+
+	</ScrollView>
+
+</LinearLayout>
+

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.age"
+	android:versionCode="1"
+	android:versionName="1.0">
+
+	<uses-sdk
+		android:minSdkVersion="23"
+		android:targetSdkVersion="25"/>
+
+	<uses-permission
+		android:name="android.permission.INTERNET"/>
+
+	<uses-permission
+		android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+	<uses-permission
+		android:name="android.permission.ACCESS_WIFI_STATE"/>
+
+	<application
+		android:allowBackup="true"
+		android:icon="@drawable/ic_launcher"
+		android:label="AGE"
+		android:theme="@android:style/Theme.Material.Light">
+
+		<activity
+			android:name=".MainActivity"
+			android:label="AGE"
+			android:configChanges="fontScale|keyboard|keyboardHidden|locale|orientation|screenLayout|uiMode">
+
+			<intent-filter>
+
+				<action
+					android:name="android.intent.action.MAIN"/>
+
+				<category
+					android:name="android.intent.category.LAUNCHER"/>
+
+			</intent-filter>
+
+		</activity>
+
+		<activity
+			android:name=".Player"
+			android:configChanges="fontScale|keyboard|keyboardHidden|locale|orientation|screenLayout|uiMode">
+
+			<intent-filter>
+
+				<action
+					android:name="android.intent.action.PLAYER"/>
+
+				<category
+					android:name="android.intent.category.DEFAULT"/>
+
+			</intent-filter>
+
+		</activity>
+
+	</application>
+
+</manifest>
+

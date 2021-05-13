@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true"><!--按下-->
+        <shape>
+            <solid android:color="#FF666666"/> <!--按键内部填充-->
+            <stroke android:width="3dp" android:color="#FF000000" /><!--描边-->
+            <corners android:radius="10dp" /><!--圆角-->
+            <padding android:top="10dp" android:bottom="10dp" /><!--内边距-->
+        </shape>
+    </item>
+
+    <item android:state_focused="true"><!--选中-->
+        <shape>
+            <solid android:color="#FF66CCFF"/> <!--按键内部填充-->
+            <stroke android:width="3dp" android:color="#FF66CCFF" /><!--描边-->
+            <corners android:radius="10dp" /><!--圆角-->
+            <padding android:top="10dp" android:bottom="10dp" /><!--内边距-->
+        </shape>
+    </item>
+
+    <item>
+        <shape>
+            <solid android:color="#FFFFFFFF"/> <!--按键内部填充-->
+            <stroke android:width="3dp" android:color="#00000000" /><!--描边-->
+            <corners android:radius="10dp" /><!--圆角-->
+            <padding android:top="10dp" android:bottom="10dp" /><!--内边距-->
+        </shape>
+    </item>
+</selector>
+<!--
+android:color="#ffff0000"     //颜色值，#RGB,$ARGB,#RRGGBB,#AARRGGBB 
+android:state_pressed=["true" | "false"]   //是否触摸 设置是否按压状态，一般在true时设置该属性，表示已按压状态，默认为false
+android:state_focused=["true" | "false"]   //是否获得焦点 设置是否获得焦点状态，true表示获得焦点，默认为false，表示未获得焦点
+android:state_selected=["true" | "false"]   //是否被状态,设置是否选中状态，true表示已选中，false表示未选中
+android:state_checked=["true" | "false"]   //是否选中 设置是否勾选状态，主要用于CheckBox和RadioButton，true表示已被勾选，false表示未被勾选
+
+solid    填充颜色
+gradient 主体渐变
+startColor开始颜色
+endColor结束颜色
+angle开始渐变的角度（值只能为90的倍数，0时为左到右渐变，90时为下到上渐变，依次逆时针类推）
+stroke 边框 width 边框宽度，color 边框颜色
+corners 圆角 radius 半径，0为直角
+padding 外边距
+-->
