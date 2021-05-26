@@ -29,15 +29,18 @@ public class Cell extends FrameLayout {
         new_ = mView.findViewById(R.id.new_);
         mView.setFocusable(true);//用键盘是否能获得焦点
         mView.setFocusableInTouchMode(true);//触摸是否能获得焦点
-		
         bg.getLayoutParams().width = t;
         name.setWidth(t-20);
         new_name.setWidth(t-20);
         new Doc().getPic(b.getid_8(), mContext, new Doc.Pic(){
                 @Override
                 public void getImg(Bitmap b) {
+					if(b!=null){
                    Bitmap p= Bitmap.createScaledBitmap(b,t-20,(int)((t-20)*1.4),true);
                     img.setImageBitmap(p);
+					}else{
+						//删除关于此id的所有缓存
+					}
                 }
             });
         name.setText(b.getname());

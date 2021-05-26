@@ -49,6 +49,7 @@ import android.widget.GridLayout.Spec;
 import android.net.*;
 import java.io.*;
 import java.util.*;
+import android.content.*;
 public class MainActivity extends Activity
 {
     ScrollView longbox;//下拉框
@@ -175,28 +176,39 @@ public class MainActivity extends Activity
                 @Override
                 public boolean onLongClick(View v)
 				{
-					SharedPreferences 数据持久化= getSharedPreferences(b.getid_8(), Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
-					File pref_xml = new File("data/data/com.age/shared_prefs", b.getid_8() + ".xml");
-					if (pref_xml.exists())
-					{
-						pref_xml.delete();
-					}
-					if (数据持久化 != null)
-					{
-						SharedPreferences.Editor editor = 数据持久化.edit(); //实例化SharedPreferences.Editor对象（第二步）
-						editor.clear();
-						editor.commit();
-					}   
-					finish();
-					Intent intent = new Intent(MainActivity.this, MainActivity.class);
-					startActivity(intent);
-					/*
-					 Intent intent = new Intent();
-					 intent.setClass(MainActivity.this,Detail.class);
-					 intent.putExtra("id",b.getid());
-					 startActivity(intent);*/
-                    //长按删除记录
-                    //Toast.makeText(MainActivity.this,"这里是长按按钮",Toast.LENGTH_LONG).show();
+				AlertDialog alertDialog1=new AlertDialog.Builder(MainActivity.this)
+				.setTitle("修改记录")//标题
+                .setPositiveButton("特别关注(*^▽^*)", new DialogInterface.OnClickListener() {//添加"Yes"按钮
+				@Override
+				public void onClick(DialogInterface dialogInterface, int i) {
+					//TODO
+				}})
+						.setNegativeButton("删除记录>_<",new DialogInterface.OnClickListener() {//添加"NO"按钮
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								SharedPreferences 数据持久化= getSharedPreferences(b.getid_8(), Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+								File pref_xml = new File("data/data/com.age/shared_prefs", b.getid_8() + ".xml");
+								if (pref_xml.exists())
+								{
+									pref_xml.delete();
+								}
+								if (数据持久化 != null)
+								{
+									SharedPreferences.Editor editor = 数据持久化.edit(); //实例化SharedPreferences.Editor对象（第二步）
+									editor.clear();
+									editor.commit();
+								}   
+								finish();
+								Intent intent = new Intent(MainActivity.this, MainActivity.class);
+								startActivity(intent);
+							}})
+						.setNeutralButton("备用按钮o_O???",new DialogInterface.OnClickListener() {//添加"备用"按钮
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								//TODO
+							}})
+			.create();
+		alertDialog1.show();
                     return true;//不再传递
                 }
 			});
@@ -250,7 +262,7 @@ public class MainActivity extends Activity
 			Toast.makeText(this, "没有历史记录", Toast.LENGTH_LONG).show();
 		}
     }
-    public void weekly(View v)
+    public void neplay (View v)
 	{
         //new Thread(runnable).start();
         new Doc().getHtml("https://www.agefans.net", new Doc.Html(){
@@ -347,6 +359,9 @@ public class MainActivity extends Activity
 							);
 							switch (jsonObject.getString("wd"))
 							{
+								case "0":
+									ll0.addView(newbutton(b, 7));
+									break;
 								case "1":
 									ll1.addView(newbutton(b, 7));
 									break;
@@ -365,9 +380,6 @@ public class MainActivity extends Activity
 								case "6":
 									ll6.addView(newbutton(b, 7));
 									break;
-								case "0":
-									ll0.addView(newbutton(b, 7));
-									break;
 								default :
 									txt.setText(jsonObject.getString("name") + "不知道这部番剧是周几播出！" + jsonObject.getString("id")) ;
 									break;
@@ -380,9 +392,171 @@ public class MainActivity extends Activity
                 }
             });
     }
-	public void neplay(View v)
+	public void weekly(View v)
 	{
-		
+		new Doc().getHtml("https://www.agefans.net", new Doc.Html(){
+                @Override
+                public void getDoc(Document doc)
+                {
+                    String str=null;
+                    title = doc.title();
+                    txt.setText(title);
+                    longbox.removeAllViews();//清空滑动列表
+                    //GridLayout grid=new GridLayout(MainActivity.this);
+                    //grid.setColumnCount(7);
+					LinearLayout ll = new LinearLayout(MainActivity.this);
+					ll.setOrientation(LinearLayout.VERTICAL); 
+                    longbox.addView(ll);
+                    GridLayout gl0 = new GridLayout(MainActivity.this);
+                    GridLayout gl1 = new GridLayout(MainActivity.this);
+                    GridLayout gl2 = new GridLayout(MainActivity.this);
+                    GridLayout gl3 = new GridLayout(MainActivity.this);
+                    GridLayout gl4 = new GridLayout(MainActivity.this);
+                    GridLayout gl5 = new GridLayout(MainActivity.this);
+                    GridLayout gl6 = new GridLayout(MainActivity.this);
+                    gl0.setColumnCount(7);
+                    gl1.setColumnCount(7);
+                    gl2.setColumnCount(7);
+                    gl3.setColumnCount(7);
+                    gl4.setColumnCount(7);
+                    gl5.setColumnCount(7);
+                    gl6.setColumnCount(7);
+                    Date today = new Date();
+                    Calendar c = Calendar.getInstance();
+                    c.setTime(today);
+                    int weekday = c.get(Calendar.DAY_OF_WEEK);
+                    switch (weekday)//把今天标红
+                    {
+                        case 1:
+                            gl0.setBackgroundColor(Color.RED);
+							ll.addView(gl0);
+							ll.addView(gl1);
+							ll.addView(gl2);
+							ll.addView(gl3);
+							ll.addView(gl4);
+							ll.addView(gl5);
+							ll.addView(gl6);
+                            break;
+                        case 2:
+                            gl1.setBackgroundColor(Color.RED);
+							ll.addView(gl1);
+							ll.addView(gl2);
+							ll.addView(gl3);
+							ll.addView(gl4);
+							ll.addView(gl5);
+							ll.addView(gl6);
+							ll.addView(gl0);
+                            break;
+                        case 3:
+                            gl2.setBackgroundColor(Color.RED);
+							ll.addView(gl2);
+							ll.addView(gl3);
+							ll.addView(gl4);
+							ll.addView(gl5);
+							ll.addView(gl6);
+							ll.addView(gl0);
+							ll.addView(gl1);
+                            break;
+                        case 4:
+                            gl3.setBackgroundColor(Color.RED);
+							ll.addView(gl3);
+							ll.addView(gl4);
+							ll.addView(gl5);
+							ll.addView(gl6);
+							ll.addView(gl0);
+							ll.addView(gl1);
+							ll.addView(gl2);
+                            break;
+                        case 5:
+                            gl4.setBackgroundColor(Color.RED);
+							ll.addView(gl4);
+							ll.addView(gl5);
+							ll.addView(gl6);
+							ll.addView(gl0);
+							ll.addView(gl1);
+							ll.addView(gl2);
+							ll.addView(gl3);
+                            break;
+                        case 6:
+                            gl5.setBackgroundColor(Color.RED);
+							ll.addView(gl5);
+							ll.addView(gl6);
+							ll.addView(gl0);
+							ll.addView(gl1);
+							ll.addView(gl2);
+							ll.addView(gl3);
+							ll.addView(gl4);
+                            break;
+                        case 7:
+                            gl6.setBackgroundColor(Color.RED);
+							ll.addView(gl6);
+							ll.addView(gl0);
+							ll.addView(gl1);
+							ll.addView(gl2);
+							ll.addView(gl3);
+							ll.addView(gl4);
+							ll.addView(gl5);
+                            break;
+                        default :
+                            txt.setText("预料之外的日子！") ;
+                            break;
+
+                    }
+                    Element masthead = doc.select("div.blockcontent script").first();
+                    String divstr=masthead.toString();
+                    Pattern p=Pattern.compile("(\\[).*?(\\];)");
+                    Matcher m=p.matcher(divstr);
+                    m.find();
+                    str = m.group(); 
+                    str = str.substring(0, str.length() - 1);
+                    try
+					{
+                        JSONArray jsonArray = new JSONArray(str);
+						for (int i=0; i < jsonArray.length(); i++)
+						{
+							JSONObject jsonObject = jsonArray.getJSONObject(i);
+							BanGuMi b=new BanGuMi(
+								jsonObject.getString("isnew"),
+								jsonObject.getString("id"),
+								jsonObject.getString("wd"),
+								jsonObject.getString("name"),
+								jsonObject.getString("mtime"),
+								jsonObject.getString("namefornew")
+							);
+							switch (jsonObject.getString("wd"))
+							{
+								case "0":
+									gl0.addView(newbutton(b, 7));
+									break;
+								case "1":
+									gl1.addView(newbutton(b, 7));
+									break;
+								case "2":
+									gl2.addView(newbutton(b, 7));
+									break;
+								case "3":
+									gl3.addView(newbutton(b, 7));
+									break;
+								case "4":
+									gl4.addView(newbutton(b, 7));
+									break;
+								case "5":
+									gl5.addView(newbutton(b, 7));
+									break;
+								case "6":
+									gl6.addView(newbutton(b, 7));
+									break;
+								default :
+									txt.setText(jsonObject.getString("name") + "不知道这部番剧是周几播出！" + jsonObject.getString("id")) ;
+									break;
+
+							}
+						}
+					}
+					catch (JSONException e)
+					{}
+                }
+            });
 	}
     //TV-2021-A-搞笑-BDRIP-name-1-日本-1-连载
     void newleibie(final GridLayout grid, final catalog c)
