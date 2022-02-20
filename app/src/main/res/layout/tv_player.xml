@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:gravity="center"
+	android:background="#FF000000">
+
+	<com.age.MyVideoView
+		android:id="@+id/video_view"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_gravity="center"/>
+
+	<TextClock
+		android:visibility="gone"
+		android:id="@+id/textClock"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="top"
+		android:format24Hour="HH:mm"
+		android:layout_alignParentRight="true"
+		android:textColor="#FFFFFF"
+		android:textSize="24sp"/>
+
+	<TextView
+		android:visibility="gone"
+		android:id="@+id/t调试"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textColor="#FFFFFF"/>
+
+	<ImageView
+		android:visibility="gone"
+		android:layout_centerInParent="true"
+		android:id="@+id/btn_play_or_pause"
+		android:background="@drawable/pause"
+		android:layout_width="100dp"
+		android:layout_height="100dp"/>
+
+	<ImageView
+		android:visibility="gone"
+		android:layout_centerInParent="true"
+		android:id="@+id/btn_restart_play"
+		android:background="@drawable/restart"
+		android:layout_width="100dp"
+		android:layout_height="100dp"/>
+
+	<RadioGroup
+		android:visibility="gone"
+		android:id="@+id/设置单选列表"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:gravity="center_vertical"
+		android:layout_alignParentBottom="true">
+
+		<RadioButton
+			android:id="@+id/_50"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="0.5倍速"
+			android:background="@drawable/button_style"
+			android:textSize="10sp"
+			android:height="20dp"/>
+
+		<RadioButton
+			android:id="@+id/_75"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="0.75倍速"
+			android:background="@drawable/button_style"
+			android:textSize="10sp"
+			android:height="20dp"/>
+
+		<RadioButton
+			android:id="@+id/_100"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="1倍速"
+			android:background="@drawable/button_style"
+			android:textSize="10sp"
+			android:height="20dp"/>
+
+		<RadioButton
+			android:id="@+id/_125"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="1.25倍速"
+			android:background="@drawable/button_style"
+			android:textSize="10sp"
+			android:height="20dp"/>
+
+		<RadioButton
+			android:id="@+id/_150"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="1.5倍速"
+			android:background="@drawable/button_style"
+			android:textSize="10sp"
+			android:height="20dp"/>
+
+		<RadioButton
+			android:id="@+id/_175"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="1.75倍速"
+			android:background="@drawable/button_style"
+			android:textSize="10sp"
+			android:height="20dp"/>
+
+		<RadioButton
+			android:id="@+id/_200"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="2倍速"
+			android:background="@drawable/button_style"
+			android:textSize="10sp"
+			android:height="20dp"/>
+
+	</RadioGroup>
+
+	<HorizontalScrollView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true">
+
+		<LinearLayout
+			android:visibility="gone"
+			android:orientation="vertical"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:id="@+id/选集列表">
+
+		</LinearLayout>
+
+	</HorizontalScrollView>
+
+	<LinearLayout
+		android:visibility="visible"
+		android:gravity="center_vertical"
+		android:layout_alignParentBottom="true"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/进度条列表">
+
+		<TextView
+			android:id="@+id/tv_play_time"
+			android:text="00:00"
+			android:textSize="12sp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#FFFFFF"/>
+
+		<SeekBar
+			android:id="@+id/time_seekBar"
+			android:layout_weight="1"
+			android:layout_width="3dp"
+			android:layout_height="wrap_content"/>
+
+		<TextView
+			android:id="@+id/tv_total_time"
+			android:text="00:00"
+			android:textSize="12sp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#FFFFFF"/>
+
+	</LinearLayout>
+
+</RelativeLayout>
+

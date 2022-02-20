@@ -7,46 +7,275 @@ import android.widget.TextView;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.view.View.OnClickListener;
-import BanGuMi;
 import android.graphics.Bitmap;
 import android.widget.RelativeLayout;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
-public class Cell extends FrameLayout {
-    private Context mContext;
+import java.io.*;
+import android.net.*;
+import android.content.*;
+import android.graphics.*;
+import android.widget.*;
+import android.app.*;
+import java.net.*;
+import org.jsoup.*;
+import org.jsoup.nodes.*;
+import org.jsoup.select.*;
+import android.view.*;
+public class Cell extends FrameLayout
+{
     private View mView,bg;
     private ImageView img;
     private TextView name,new_name,new_;
-    public Cell(Context context, BanGuMi b,final int t) {
+	public Cell(final Context context, String zhou_name,int width,int zhou)
+	{
         super(context, null, 0);
-        mContext = context;
-        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mView = inflater.inflate(R.layout.cell, this, true);
-        bg=mView.findViewById(R.id.bg);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mView = inflater.inflate(R.xml.cell, this, true);
+        bg = mView.findViewById(R.id.bg);
         img = mView.findViewById(R.id.img);
         name = mView.findViewById(R.id.name);
         new_name = mView.findViewById(R.id.new_name);
         new_ = mView.findViewById(R.id.new_);
         mView.setFocusable(true);//用键盘是否能获得焦点
         mView.setFocusableInTouchMode(true);//触摸是否能获得焦点
-        bg.getLayoutParams().width = t;
-        name.setWidth(t-20);
-        new_name.setWidth(t-20);
-        new Doc().getPic(b.getid_8(), mContext, new Doc.Pic(){
+        bg.getLayoutParams().width =width ;
+        name.setWidth(width - 20);
+        new_name.setWidth( width- 20);
+		mView.setBackgroundResource(R.drawable.button_style);
+		new_name.setVisibility(View.GONE);
+        new_.setVisibility(View.GONE);
+        name.setText(zhou_name);
+		name.setGravity(Gravity.CENTER);
+		//name.setTextSize(25);
+		Bitmap b ;
+		switch (zhou)
+		{
+			case 0:
+				b = BitmapFactory.decodeResource(getResources(),R.drawable.ic_7);
+				break;
+			case 1:
+				b = BitmapFactory.decodeResource(getResources(),R.drawable.ic_1);
+				break;
+			case 2:
+				b = BitmapFactory.decodeResource(getResources(),R.drawable.ic_2);
+				break;
+			case 3:
+				b = BitmapFactory.decodeResource(getResources(),R.drawable.ic_3);
+				break;
+			case 4:
+				b = BitmapFactory.decodeResource(getResources(),R.drawable.ic_4);
+				break;
+			case 5:
+				b = BitmapFactory.decodeResource(getResources(),R.drawable.ic_5);
+				break;
+			case 6:
+				b = BitmapFactory.decodeResource(getResources(),R.drawable.ic_6);
+				break;
+			default :
+				b = BitmapFactory.decodeResource(getResources(),R.drawable.ic_0);
+				break;
+		}
+		Bitmap p= Bitmap.createScaledBitmap(b,width  - 20, (int)((width - 20) * 1.4), true);
+		img.setImageBitmap(p);
+	}
+    public Cell(final Context context,final String id,final int id_x,final int id_y,final String id_name,final String id_new_name,boolean isnew, final int width)
+	{
+        super(context, null, 0);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mView = inflater.inflate(R.xml.cell, this, true);
+        bg = mView.findViewById(R.id.bg);
+        img = mView.findViewById(R.id.img);
+        name = mView.findViewById(R.id.name);
+        new_name = mView.findViewById(R.id.new_name);
+        new_ = mView.findViewById(R.id.new_);
+        mView.setFocusable(true);//用键盘是否能获得焦点
+        mView.setFocusableInTouchMode(true);//触摸是否能获得焦点
+        bg.getLayoutParams().width = width;
+        name.setWidth(width - 20);
+        new_name.setWidth(width - 20);
+		mView.setBackgroundResource(R.drawable.button_style);
+        mView.setOnClickListener(new Button.OnClickListener() {
                 @Override
-                public void getImg(Bitmap b) {
-					if(b!=null){
-                   Bitmap p= Bitmap.createScaledBitmap(b,t-20,(int)((t-20)*1.4),true);
-                    img.setImageBitmap(p);
-					}else{
-						//删除关于此id的所有缓存
-					}
+                public void onClick(View v)
+				{
+					Intent intent = new Intent();
+                    //intent.setClass(context,Player.class);
+					intent.setClass(context,TvPlayer.class);
+                    intent.putExtra("id",id);
+                    context.startActivity(intent);
                 }
             });
-        name.setText(b.getname());
-		if(b.getnew_name()==null)new_name.setVisibility(View.GONE);
-        else new_name.setText(b.getnew_name());
-        if(b.getisnew()){new_.setVisibility(View.VISIBLE);}
-        else{new_.setVisibility(View.GONE);}
+		mView.setOnLongClickListener(new View.OnLongClickListener() { //其实就是增加了长按监听事件
+                @Override
+                public boolean onLongClick(View v)
+				{
+					AlertDialog alertDialog1=new AlertDialog.Builder(context)
+						.setTitle("这是长按选单")//标题
+						.setPositiveButton("稍后再看", new DialogInterface.OnClickListener() {//添加"Yes"按钮
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								SharedPreferences 数据持久化= context.getSharedPreferences(id, Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+								SharedPreferences.Editor editor = 数据持久化.edit(); //实例化SharedPreferences.Editor对象（第二步）
+								editor.putString("id", id+"?playid="+id_x+"_"+id_y);//00000000?playid=2_3
+								editor.putString("name", id_name);
+								editor.putString("new_name", id_new_name);
+								editor.commit(); //提交当前数据 
+							}})
+						.setNegativeButton("删除记录>_<",new DialogInterface.OnClickListener() {//添加"NO"按钮
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								File pref_xml = new File("data/data/com.age/shared_prefs",id+ ".xml");
+								if (pref_xml.exists())
+								{
+									pref_xml.delete();
+								}
+								Intent intent = new Intent(context, MainActivity.class);
+								context.startActivity(intent);
+							}})
+						.setNeutralButton("清除缓存",new DialogInterface.OnClickListener() {//添加"备用"按钮
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								SharedPreferences sp历史记录= context.getSharedPreferences(id, Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+								SharedPreferences.Editor editor = sp历史记录.edit(); //实例化SharedPreferences.Editor对象（第二步）
+								editor.clear();//清空
+								editor.commit(); //提交当前数据
+								SharedPreferences sp对照表= context.getSharedPreferences("PIC", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+								SharedPreferences.Editor editor对照表 = sp对照表.edit(); //实例化SharedPreferences.Editor对象（第二步）
+								editor对照表.remove(id);
+								editor对照表.commit(); //提交当前数据
+								File id_jpg = new File(context.getCacheDir(), id + ".jpg");
+								if (id_jpg.exists())
+								{
+									id_jpg.delete();
+								}
+							}})
+						.create();
+					alertDialog1.show();
+                    return true;//不再传递
+                }
+			});
+		
+		File file = new File(context.getCacheDir(), id + ".jpg");
+        if (file.exists())// 如果图片存在本地缓存目录
+		{
+			//Toast.makeText(context,"从缓存中读到图片", Toast.LENGTH_SHORT).show();
+			Uri uri =Uri.fromFile(file);//Uri.fromFile(path)这个方法能得到文件的URI
+			ContentResolver cr = context.getContentResolver();
+			InputStream is =null;
+            try
+			{
+				is = cr.openInputStream(uri);
+            }
+			catch (FileNotFoundException e)
+			{}
+			if (is == null)Toast.makeText(context, "缓存图片读取失败：" + file, Toast.LENGTH_SHORT).show();
+			BitmapFactory.Options options = new BitmapFactory.Options();
+			options.inSampleSize = 1;//缩小图片，二的倍数，1/n
+			Bitmap bitmap = BitmapFactory.decodeStream(is, null, options);
+			Bitmap p= Bitmap.createScaledBitmap(bitmap, width - 20, (int)((width - 20) * 1.4), true);
+			img.setImageBitmap(p);
+		}
+		else
+		{
+			//Toast.makeText(context, "从对照表中读取图片链接", Toast.LENGTH_SHORT).show();
+			SharedPreferences 数据持久化= context.getSharedPreferences("PIC", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+			final String url=数据持久化.getString(id, "空");
+			if (url.length()>5)
+			{
+				new Thread(new Runnable() {
+						@Override
+						public void run()
+						{
+							try
+							{
+								//imgUrl = new URL(params[0]);
+								HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+								conn.setDoInput(true);
+								conn.connect();
+								InputStream is = conn.getInputStream();
+								Bitmap bitmap = BitmapFactory.decodeStream(is);
+								if (bitmap != null)
+								{
+									final Bitmap p= Bitmap.createScaledBitmap(bitmap, width - 20, (int)((width - 20) * 1.4), true);
+									img.post(new Runnable(){
+											public void run()
+											{
+												img.setImageBitmap(p);
+											}
+										});
+									File f = new File(context.getCacheDir(), id + ".jpg");
+									// 创建一个位于SD卡上的文件 
+									FileOutputStream fileOutStream=null; 
+									fileOutStream = new FileOutputStream(f); 
+									//把位图输出到指定的文件中 
+									bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutStream); 
+									fileOutStream.close(); 
+									is.close();
+								}
+							}
+							catch (IOException e)
+							{}
+						}
+					}).start();
+			}
+			else
+			{
+				//Toast.makeText(context, "从网页上下载图片", Toast.LENGTH_SHORT).show();
+				new Thread(new Runnable() {
+						@Override
+						public void run()
+						{
+							SharedPreferences sp数据持久化= context.getSharedPreferences("sp", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+							String url = sp数据持久化.getString("域名","https://www.agefans.live")+"/detail/" + id;
+							Connection con = Jsoup.connect(url);
+							Document doc = null;
+							try
+							{
+								doc = con.get();
+								Elements res_img = doc.select("img.poster");
+								String img_url=res_img.attr("abs:src");
+								if(!(img_url.startsWith("http"))){img_url="https:"+res_img.attr("src");}
+								//加https:
+								SharedPreferences 数据持久化= context.getSharedPreferences("PIC", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+								SharedPreferences.Editor editor = 数据持久化.edit(); //实例化SharedPreferences.Editor对象（第二步）
+								editor.putString(id, img_url);//保存数据
+								editor.commit(); //提交当前数据 
+								HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+								conn.setDoInput(true);
+								conn.connect();
+								InputStream is = conn.getInputStream();
+								Bitmap bitmap = BitmapFactory.decodeStream(is);
+								if (bitmap != null)
+								{
+									final Bitmap p= Bitmap.createScaledBitmap(bitmap, width - 20, (int)((width - 20) * 1.4), true);
+									img.post(new Runnable(){
+											public void run()
+											{
+												img.setImageBitmap(p);
+											}
+										});
+									File file = new File(context.getCacheDir(), id + ".jpg");
+									// 创建一个位于SD卡上的文件 
+									FileOutputStream fileOutStream=null; 
+									fileOutStream = new FileOutputStream(file); 
+									//把位图输出到指定的文件中 
+									bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutStream); 
+									fileOutStream.close(); 
+									is.close();
+								}
+							}
+							catch (IOException e)
+							{}}
+					}).start();
+			}
+		}
+        name.setText(id_name);
+		if (id_new_name == null)new_name.setVisibility(View.GONE);
+        else new_name.setText(id_new_name);
+        if (isnew)
+		{new_.setVisibility(View.VISIBLE);}
+        else
+		{new_.setVisibility(View.GONE);}
     }
 }

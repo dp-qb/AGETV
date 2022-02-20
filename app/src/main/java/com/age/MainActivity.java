@@ -43,13 +43,16 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.widget.ScrollView;
 import android.widget.ImageButton;
-import BanGuMi;
 import android.widget.RelativeLayout;
 import android.widget.GridLayout.Spec;
 import android.net.*;
 import java.io.*;
 import java.util.*;
 import android.content.*;
+import android.widget.*;
+import android.content.res.*;
+import android.preference.*;
+import android.app.slice.*;
 public class MainActivity extends Activity
 {
     ScrollView longbox;//下拉框
@@ -59,6 +62,12 @@ public class MainActivity extends Activity
     List<BanGuMi> 一周间;
     int w=1024,yemax=999;
     catalog cata=new catalog("all", "all", "all", "all", "all", "all", "all", "all", "time", 1);
+	int z正在显示的组件序号=0;
+	String z正在显示的组件内容=null;
+	String 域名;
+	SharedPreferences sp;
+	//https://www.agemys.com
+	//age.tv
     @Override
     protected void onCreate(Bundle savedInstanceState)
 	{
@@ -66,6 +75,8 @@ public class MainActivity extends Activity
         requestWindowFeature(Window.FEATURE_NO_TITLE);// 隐藏标题
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);// 设置全屏
         setContentView(R.layout.main);
+		sp=getSharedPreferences("com.age_preferences", Activity.MODE_PRIVATE);
+		域名=sp.getString("AGE域名","https://www.agemys.com");
 		findViewById(R.id.lisi).requestFocus();//获得焦点
         longbox = findViewById(R.id.longbox);//获取下拉框
         //grid = findViewById(R.id.grid); //获取GridLayout控件
@@ -79,7 +90,7 @@ public class MainActivity extends Activity
 					{
                         title = v.getText().toString().trim();
                         cata.当前页 = 1;
-                        newye(title);
+                        search(域名+"/search?query=" + title + "&page=" + cata.当前页);
                         return true;
                     }
                     return false;  
@@ -87,11 +98,41 @@ public class MainActivity extends Activity
             }); 
         w = getWindowManager().getDefaultDisplay().getWidth();
         //getWindowManager().getDefaultDisplay().getHeight(); 
+		z正在显示的组件内容=null;
         lisi(null);
     }
-    void newye(final String 关键词)
+	//旋转屏幕
+	@Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        w = getWindowManager().getDefaultDisplay().getWidth();
+		//0搜索，1历史，2每周，3分类，4设置
+        switch (z正在显示的组件序号)//旋转屏幕时刷新当前组件
+		{
+			case 0:
+				search(null);
+				break;
+			case 1:
+				lisi(null);//不需要data
+				break;
+			case 2:
+				weekly(null);//不需要data
+				break;
+			case 3:
+				leibie(null);
+				break;
+			default :
+				txt.setText("预料之外的组件！") ;
+				break;
+		}
+    }
+	//搜索
+    void search(String 拼接的搜索网址)
     {
-        new Doc().getHtml("https://www.agefans.net/search?query=" + 关键词 + "&page=" + cata.当前页, new Doc.Html(){
+		z正在显示的组件序号=0;
+		if(拼接的搜索网址==null)拼接的搜索网址=z正在显示的组件内容;
+		else z正在显示的组件内容=拼接的搜索网址;
+		new Doc().getHtml(拼接的搜索网址, new Doc.Html(){
                 @Override
                 public void getDoc(Document doc)
                 {
@@ -102,15 +143,23 @@ public class MainActivity extends Activity
                     grid.setColumnCount(6);
                     longbox.addView(grid);
                     Elements resultLinks = doc.select("a.cell_poster");
+					SharedPreferences 图片数据持久化= getSharedPreferences("PIC", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+					SharedPreferences.Editor t图片链接持久化存储 = 图片数据持久化.edit(); //实例化SharedPreferences.Editor对象（第二步）
                     for (Element res:resultLinks)
                     {
                         Document body = Jsoup.parseBodyFragment(res.html());
                         Element img = body.select("img").first();
                         Element span = body.select("span").first();
                         BanGuMi b= new BanGuMi("false", res.attr("href").substring(8), null, img.attr("alt"), null, span.text());
-                        grid.addView(newbutton(b, 6));
-                        //grid.addView(newbutton(res.attr("href").substring(8),img.attr("alt"),6));
+                        //grid.addView(newbutton(b, 6));
+						
+						String img_url=img.attr("abs:src");
+						if(!(img_url.startsWith("http"))){img_url="https:"+img.attr("src");}
+						//加https:
+						t图片链接持久化存储.putString(b.getid_8(), img_url);//保存数据
+                        grid.addView(newbutton(b,6));
                     }
+					t图片链接持久化存储.commit(); //提交当前数据 
                     Elements li=doc.select("#result_count");
                     Button butl=new Button(MainActivity.this);
                     Button butr=new Button(MainActivity.this);
@@ -123,7 +172,7 @@ public class MainActivity extends Activity
                     }
                     double d=Integer.parseInt(s);
                     yemax = (int) Math.ceil(d / 24);
-                    t.setText("当前第" + cata.当前页 + "页\n共" + yemax + "页");
+                    t.setText("当前第" + cata.当前页 + "页\n共" + yemax + "页\n原始值"+s);
                     butl.setText("上一页");
                     butr.setText("下一页");
                     butl.setOnClickListener(new Button.OnClickListener() {
@@ -133,7 +182,7 @@ public class MainActivity extends Activity
                                 if (cata.当前页 > 1)
 								{
                                     cata.当前页 -= 1;
-									newye(关键词);
+									search(域名+"/search?query=" + title + "&page=" + cata.当前页);
                                 }
                                 else
 								{Toast.makeText(MainActivity.this, "已经是第一页了！", Toast.LENGTH_SHORT).show();}
@@ -146,9 +195,9 @@ public class MainActivity extends Activity
                                 if (cata.当前页 < yemax)
 								{
                                     cata.当前页 += 1;
-									newye(关键词);}
+									search(域名+"/search?query=" + title + "&page=" + cata.当前页);}
                                 else
-								{Toast.makeText(MainActivity.this, "已经是第一页了！", Toast.LENGTH_SHORT).show();}
+								{Toast.makeText(MainActivity.this, "已经是最后一页了！", Toast.LENGTH_SHORT).show();}
                             }
                         });
                     grid.addView(t);
@@ -157,65 +206,34 @@ public class MainActivity extends Activity
                 }
             });
     }
-    View newbutton(final BanGuMi b, int f)
+	View newbutton(String zhou_name,int zhou)
 	{
-        final Cell but=new Cell(this, b, (w / f));
-        //but.setWidth(w/f);
-        but.setBackgroundResource(R.drawable.button_style);
-        but.setOnClickListener(new Button.OnClickListener() {
-                @Override
-                public void onClick(View v)
-				{
-					Intent intent = new Intent();
-                    intent.setClass(MainActivity.this, Player.class);
-                    intent.putExtra("id", b.getid());
-                    startActivity(intent);
-                }
-            });
-        but.setOnLongClickListener(new View.OnLongClickListener() { //其实就是增加了长按监听事件
-                @Override
-                public boolean onLongClick(View v)
-				{
-				AlertDialog alertDialog1=new AlertDialog.Builder(MainActivity.this)
-				.setTitle("修改记录")//标题
-                .setPositiveButton("特别关注(*^▽^*)", new DialogInterface.OnClickListener() {//添加"Yes"按钮
-				@Override
-				public void onClick(DialogInterface dialogInterface, int i) {
-					//TODO
-				}})
-						.setNegativeButton("删除记录>_<",new DialogInterface.OnClickListener() {//添加"NO"按钮
-							@Override
-							public void onClick(DialogInterface dialogInterface, int i) {
-								SharedPreferences 数据持久化= getSharedPreferences(b.getid_8(), Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
-								File pref_xml = new File("data/data/com.age/shared_prefs", b.getid_8() + ".xml");
-								if (pref_xml.exists())
-								{
-									pref_xml.delete();
-								}
-								if (数据持久化 != null)
-								{
-									SharedPreferences.Editor editor = 数据持久化.edit(); //实例化SharedPreferences.Editor对象（第二步）
-									editor.clear();
-									editor.commit();
-								}   
-								finish();
-								Intent intent = new Intent(MainActivity.this, MainActivity.class);
-								startActivity(intent);
-							}})
-						.setNeutralButton("备用按钮o_O???",new DialogInterface.OnClickListener() {//添加"备用"按钮
-							@Override
-							public void onClick(DialogInterface dialogInterface, int i) {
-								//TODO
-							}})
-			.create();
-		alertDialog1.show();
-                    return true;//不再传递
-                }
-			});
-        return but;
+		return new Cell(this,zhou_name,w/7,zhou);
+	}
+    View newbutton(BanGuMi b, int f)
+	{
+		//Cell(final Context context,final String id,final int id_x,final int id_y,final String id_name,final String id_new_name,boolean isnew, final int width)	
+		int id_x,id_y;
+		if(b.id.length()<=8)
+		{
+			id_x=0;
+			id_y=0;
+		}
+        else
+		{
+			String ids[]= b.id.split("\\?|=|_");//00000000?playid=2_3
+			//b.id_8=id.substring(0,8);
+			id_x=Integer.parseInt(ids[3]);
+			id_y=Integer.parseInt(ids[3]);
+		}
+		final Cell but=new Cell(this,b.getid_8(),id_x,id_y,b.getname(),b.getnew_name(),b.getisnew(), (w / f));
+		return but;
     }
     public void lisi(View v)
     {
+		z正在显示的组件序号=1;
+		z正在显示的组件内容=null;
+		//所有的sp持久化文件都在这存着
 		File file = new File("data/data/com.age/shared_prefs");
 		longbox.removeAllViews();
         GridLayout grid=new GridLayout(MainActivity.this);
@@ -262,151 +280,26 @@ public class MainActivity extends Activity
 			Toast.makeText(this, "没有历史记录", Toast.LENGTH_LONG).show();
 		}
     }
-    public void neplay (View v)
+	public void set (View v)
 	{
-        //new Thread(runnable).start();
-        new Doc().getHtml("https://www.agefans.net", new Doc.Html(){
-                @Override
-                public void getDoc(Document doc)
-                {
-                    String str=null;
-                    title = doc.title();
-                    txt.setText(title);
-                    longbox.removeAllViews();
-                    GridLayout grid=new GridLayout(MainActivity.this);
-                    grid.setColumnCount(7);
-                    longbox.addView(grid);
-                    LinearLayout ll1 = new LinearLayout(MainActivity.this);
-                    LinearLayout ll2 = new LinearLayout(MainActivity.this);
-                    LinearLayout ll3 = new LinearLayout(MainActivity.this);
-                    LinearLayout ll4 = new LinearLayout(MainActivity.this);
-                    LinearLayout ll5 = new LinearLayout(MainActivity.this);
-                    LinearLayout ll6 = new LinearLayout(MainActivity.this);
-                    LinearLayout ll0 = new LinearLayout(MainActivity.this);
-                    ll1.setWeightSum(1);
-                    ll2.setWeightSum(1);
-                    ll3.setWeightSum(1);
-                    ll4.setWeightSum(1);
-                    ll5.setWeightSum(1);
-                    ll6.setWeightSum(1);
-                    ll0.setWeightSum(1);
-                    ll1.setOrientation(1);
-                    ll2.setOrientation(1);
-                    ll3.setOrientation(1);
-                    ll4.setOrientation(1);
-                    ll5.setOrientation(1);
-                    ll6.setOrientation(1);
-                    ll0.setOrientation(1);
-                    grid.addView(ll1);
-                    grid.addView(ll2);
-                    grid.addView(ll3);
-                    grid.addView(ll4);
-                    grid.addView(ll5);
-                    grid.addView(ll6);
-                    grid.addView(ll0);
-                    Date today = new Date();
-                    Calendar c = Calendar.getInstance();
-                    c.setTime(today);
-                    int weekday = c.get(Calendar.DAY_OF_WEEK);
-                    switch (weekday)
-                    {
-                        case 2:
-                            ll1.setBackgroundColor(Color.RED);
-                            break;
-                        case 3:
-                            ll2.setBackgroundColor(Color.RED);
-                            break;
-                        case 4:
-                            ll3.setBackgroundColor(Color.RED);
-                            break;
-                        case 5:
-                            ll4.setBackgroundColor(Color.RED);
-                            break;
-                        case 6:
-                            ll5.setBackgroundColor(Color.RED);
-                            break;
-                        case 7:
-                            ll6.setBackgroundColor(Color.RED);
-                            break;
-                        case 1:
-                            ll0.setBackgroundColor(Color.RED);
-                            break;
-                        default :
-                            txt.setText("预料之外的日子！") ;
-                            break;
-
-                    }
-                    Element masthead = doc.select("div.blockcontent script").first();
-                    String divstr=masthead.toString();
-                    Pattern p=Pattern.compile("(\\[).*?(\\];)");
-                    Matcher m=p.matcher(divstr);
-                    m.find();
-                    str = m.group(); 
-                    str = str.substring(0, str.length() - 1);
-                    try
-					{
-                        JSONArray jsonArray = new JSONArray(str);
-						for (int i=0; i < jsonArray.length(); i++)
-						{
-							JSONObject jsonObject = jsonArray.getJSONObject(i);
-							BanGuMi b=new BanGuMi(
-								jsonObject.getString("isnew"),
-								jsonObject.getString("id"),
-								jsonObject.getString("wd"),
-								jsonObject.getString("name"),
-								jsonObject.getString("mtime"),
-								jsonObject.getString("namefornew")
-							);
-							switch (jsonObject.getString("wd"))
-							{
-								case "0":
-									ll0.addView(newbutton(b, 7));
-									break;
-								case "1":
-									ll1.addView(newbutton(b, 7));
-									break;
-								case "2":
-									ll2.addView(newbutton(b, 7));
-									break;
-								case "3":
-									ll3.addView(newbutton(b, 7));
-									break;
-								case "4":
-									ll4.addView(newbutton(b, 7));
-									break;
-								case "5":
-									ll5.addView(newbutton(b, 7));
-									break;
-								case "6":
-									ll6.addView(newbutton(b, 7));
-									break;
-								default :
-									txt.setText(jsonObject.getString("name") + "不知道这部番剧是周几播出！" + jsonObject.getString("id")) ;
-									break;
-
-							}
-						}
-					}
-					catch (JSONException e)
-					{}
-                }
-            });
+		Intent intent = new Intent();
+		intent.setClass(this,SettingsActivity.class);
+		startActivity(intent);
     }
 	public void weekly(View v)
 	{
-		new Doc().getHtml("https://www.agefans.net", new Doc.Html(){
+		z正在显示的组件序号=2;
+		z正在显示的组件内容=null;
+		new Doc().getHtml(域名, new Doc.Html(){
                 @Override
                 public void getDoc(Document doc)
                 {
                     String str=null;
-                    title = doc.title();
-                    txt.setText(title);
+                    txt.setText(doc.title());
                     longbox.removeAllViews();//清空滑动列表
-                    //GridLayout grid=new GridLayout(MainActivity.this);
-                    //grid.setColumnCount(7);
-					LinearLayout ll = new LinearLayout(MainActivity.this);
-					ll.setOrientation(LinearLayout.VERTICAL); 
-                    longbox.addView(ll);
+					LinearLayout ll = new LinearLayout(MainActivity.this);//加个下拉列表
+					ll.setOrientation(LinearLayout.VERTICAL); //下拉列表是竖排
+                    longbox.addView(ll);//把下拉列表放滑动列表里
                     GridLayout gl0 = new GridLayout(MainActivity.this);
                     GridLayout gl1 = new GridLayout(MainActivity.this);
                     GridLayout gl2 = new GridLayout(MainActivity.this);
@@ -421,6 +314,13 @@ public class MainActivity extends Activity
                     gl4.setColumnCount(7);
                     gl5.setColumnCount(7);
                     gl6.setColumnCount(7);
+					gl0.addView(newbutton("周日",0));
+					gl1.addView(newbutton("周一",1));
+					gl2.addView(newbutton("周二",2));
+					gl3.addView(newbutton("周三",3));
+					gl4.addView(newbutton("周四",4));
+					gl5.addView(newbutton("周五",5));
+					gl6.addView(newbutton("周六",6));
                     Date today = new Date();
                     Calendar c = Calendar.getInstance();
                     c.setTime(today);
@@ -502,13 +402,13 @@ public class MainActivity extends Activity
                             break;
 
                     }
-                    Element masthead = doc.select("div.blockcontent script").first();
+					Element masthead = doc.select("div.blockcontent script").first();
                     String divstr=masthead.toString();
-                    Pattern p=Pattern.compile("(\\[).*?(\\];)");
-                    Matcher m=p.matcher(divstr);
+                    Pattern p=Pattern.compile("(= \\[).*?(\\];)");//取方括号内的所有文本
+					Matcher m=p.matcher(divstr);
                     m.find();
-                    str = m.group(); 
-                    str = str.substring(0, str.length() - 1);
+                    str = m.group();
+					str=str.substring(2,str.length()-1);
                     try
 					{
                         JSONArray jsonArray = new JSONArray(str);
@@ -523,6 +423,14 @@ public class MainActivity extends Activity
 								jsonObject.getString("mtime"),
 								jsonObject.getString("namefornew")
 							);
+							/*
+							 "isnew": false,
+							 "id": "20210349",
+							 "wd": 0,
+							 "name": "数码宝贝 幽灵游戏",
+							 "mtime": "2021-11-07 13:16:45",
+							 "namefornew": "第5集"
+							*/
 							switch (jsonObject.getString("wd"))
 							{
 								case "0":
@@ -554,43 +462,63 @@ public class MainActivity extends Activity
 						}
 					}
 					catch (JSONException e)
-					{}
+					{
+						txt.setText(str) ;
+					}
+					Element bt备用web域名 = doc.select("#new_tip1 a[href]").first();
+                    String bt_url=bt备用web域名.attr("href");
+					SharedPreferences.Editor bt_sp=sp.edit();
+					bt_sp.putString("bt_web域名",bt_url);
+					bt_sp.commit();
+					txt.setText(bt_url);
                 }
             });
 	}
     //TV-2021-A-搞笑-BDRIP-name-1-日本-1-连载
-    void newleibie(final GridLayout grid, final catalog c)
+    void newleibie(final GridLayout grid,String 拼接的网址)
     {
-        new Doc().getHtml("https://www.agefans.net/catalog/" + cata.getcata(), new Doc.Html(){
+        new Doc().getHtml(拼接的网址, new Doc.Html(){
                 @Override
                 public void getDoc(Document doc)
                 {
+                    Button butl=new Button(MainActivity.this);
+                    Button butr=new Button(MainActivity.this);
+                    TextView t=new TextView(MainActivity.this);
+                    String s="";
                     title = doc.title();
                     txt.setText(title);
                     grid.removeAllViews();
                     Elements resultLinks = doc.select("a.cell_poster");
+
+					SharedPreferences 图片数据持久化= getSharedPreferences("PIC", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+					SharedPreferences.Editor t图片链接持久化存储 = 图片数据持久化.edit(); //实例化SharedPreferences.Editor对象（第二步）		
                     for (Element res:resultLinks)
                     {
                         Document body = Jsoup.parseBodyFragment(res.html());
                         Element img = body.select("img").first();
                         Element span = body.select("span").first();
-                        BanGuMi b= new BanGuMi("false", res.attr("href").substring(8), null, img.attr("alt"), null, span.text());
-                        grid.addView(newbutton(b, 6));
-                        //grid.addView(newbutton(res.attr("href").substring(8),img.attr("alt"),6));
+						
+                        BanGuMi b= new BanGuMi("false", 
+						res.attr("href").substring(8), 
+						null,
+						img.attr("alt"), 
+						null, 
+						span.text());
+						String img_url=img.attr("abs:src");
+						if(!(img_url.startsWith("http"))){img_url="https:"+img.attr("src");}
+						t图片链接持久化存储.putString(b.getid_8(), img_url);//保存数据
+						grid.addView(newbutton(b, 6));
                     }
+					t图片链接持久化存储.commit(); //提交当前数据 
                     Elements li=doc.select("#result_count");
-                    Button butl=new Button(MainActivity.this);
-                    Button butr=new Button(MainActivity.this);
-                    TextView t=new TextView(MainActivity.this);
-                    String s="";
                     for (Element res:li)
                     {
                         String str=res.text();
-                        s = str.substring(0, str.length() - 2);
+                        s += str.substring(0, str.length() - 2);//截取字符串
                     }
-                    double d=Integer.parseInt(s);
+                    double d=Integer.parseInt(s);//字符串转int
                     yemax = (int) Math.ceil(d / 24);
-                    t.setText("当前第" + cata.当前页 + "页\n共" + yemax + "页");
+                    t.setText("当前第" + cata.当前页 + "页\n共" + yemax + "页\n原始值"+s);
                     butl.setText("上一页");
                     butr.setText("下一页");
                     butl.setOnClickListener(new Button.OnClickListener() {
@@ -600,7 +528,7 @@ public class MainActivity extends Activity
                                 if (cata.当前页 > 1)
 								{
                                     cata.当前页 -= 1;
-                                    newleibie(grid, cata);
+                                    newleibie(grid,域名+"/catalog/" + cata.getcata());
                                 }
                                 else
 								{Toast.makeText(MainActivity.this, "已经是第一页了！", Toast.LENGTH_SHORT).show();}
@@ -613,9 +541,10 @@ public class MainActivity extends Activity
                                 if (cata.当前页 < yemax)
 								{
                                     cata.当前页 += 1;
-                                    newleibie(grid, cata);}
+                                    newleibie(grid,域名+"/catalog/" + cata.getcata());
+								}
                                 else
-								{Toast.makeText(MainActivity.this, "已经是第一页了！", Toast.LENGTH_SHORT).show();}
+								{Toast.makeText(MainActivity.this, "已经是最后一页了！", Toast.LENGTH_SHORT).show();}
                             }
                         });
                     grid.addView(t);
@@ -648,7 +577,7 @@ public class MainActivity extends Activity
 					{
                         cata.地区 = b;
                         cata.当前页 = 1;
-                        newleibie(grid, cata);
+                        newleibie(grid,域名+"/catalog/" + cata.getcata());
                     }
                 }),
             new Radio(MainActivity.this, "版本：", 版本, new Radio.Checked(){
@@ -657,7 +586,7 @@ public class MainActivity extends Activity
 					{
                         cata.版本 = b;
                         cata.当前页 = 1;
-                        newleibie(grid, cata);
+                        newleibie(grid, 域名+"/catalog/" + cata.getcata());
                     }
                 }),
             new Radio(MainActivity.this, "首字母：", 首字母, new Radio.Checked(){
@@ -666,7 +595,7 @@ public class MainActivity extends Activity
 					{
                         cata.首字母 = b;
                         cata.当前页 = 1;
-                        newleibie(grid, cata);
+                        newleibie(grid, 域名+"/catalog/" + cata.getcata());
                     }
                 }),
             new Radio(MainActivity.this, "年份：", 年份, new Radio.Checked(){
@@ -675,7 +604,7 @@ public class MainActivity extends Activity
 					{
                         cata.年份 = b;
                         cata.当前页 = 1;
-                        newleibie(grid, cata);
+                        newleibie(grid, 域名+"/catalog/" + cata.getcata());
                     }
                 }),
             new Radio(MainActivity.this, "季度：", 季度, new Radio.Checked(){
@@ -684,7 +613,7 @@ public class MainActivity extends Activity
 					{
                         cata.季度 = b;
                         cata.当前页 = 1;
-                        newleibie(grid, cata);
+                        newleibie(grid, 域名+"/catalog/" + cata.getcata());
                     }
                 }),
             new Radio(MainActivity.this, "状态：", 状态, new Radio.Checked(){
@@ -693,7 +622,7 @@ public class MainActivity extends Activity
 					{
                         cata.状态 = b;
                         cata.当前页 = 1;
-                        newleibie(grid, cata);
+                        newleibie(grid, 域名+"/catalog/" + cata.getcata());
                     }
                 }),
             new Radio(MainActivity.this, "类型：", 类型, new Radio.Checked(){
@@ -702,7 +631,7 @@ public class MainActivity extends Activity
 					{
                         cata.类型 = b;
                         cata.当前页 = 1;
-                        newleibie(grid, cata);
+                        newleibie(grid, 域名+"/catalog/" + cata.getcata());
                     }
                 }),
             new Radio(MainActivity.this, "资源：", 资源, new Radio.Checked(){
@@ -711,7 +640,7 @@ public class MainActivity extends Activity
 					{
                         cata.资源 = b;
                         cata.当前页 = 1;
-                        newleibie(grid, cata);
+                        newleibie(grid, 域名+"/catalog/" + cata.getcata());
                     }
                 }),
             new Radio(MainActivity.this, "排序：", 排序, new Radio.Checked(){
@@ -720,7 +649,7 @@ public class MainActivity extends Activity
 					{
                         cata.排序 = b;
                         cata.当前页 = 1;
-                        newleibie(grid, cata);
+                        newleibie(grid, 域名+"/catalog/" + cata.getcata());
                     }
                 }),
         };
@@ -730,9 +659,17 @@ public class MainActivity extends Activity
 
         }
         ll.addView(grid);
-        cata.当前页 = 1;
-        newleibie(grid, cata);
-    }
+		cata.当前页 = 1;
+		
+
+		z正在显示的组件序号=3;
+		if(v==null)newleibie(grid,z正在显示的组件内容);
+        else {
+			z正在显示的组件内容=域名+"/catalog/" + cata.getcata();
+			newleibie(grid, 域名+"/catalog/" + cata.getcata());
+			}
+	}
+	
     class catalog
     {
         String 地区;
@@ -764,4 +701,72 @@ public class MainActivity extends Activity
             return 版本 + "-" + 年份 + "-" + 首字母 + "-" + 类型 + "-" + 资源 + "-" + 排序 + "-" + 当前页 + "-" + 地区 + "-" + 季度 + "-" + 状态;
         }
     }
+}
+class BanGuMi
+{
+	public Boolean isnew;
+	public String id;
+	public String wd;
+	public String name;
+	public String mtime;
+	public String new_name;
+    /*
+     "isnew": false,
+     "id": "20200087",
+     "wd": 1,
+     "name": "ReBIRTH",
+     "mtime": "2020-09-22 12:46:08",
+     "namefornew": "第24话"
+     */
+    public BanGuMi(String is,String i,String w,String n,String m,String na)
+    {
+        isnew=Boolean.parseBoolean(is);
+        id=i;
+        wd=w;
+        name=n;
+        mtime=m;
+        new_name=na;
+    }
+	/*
+	 public BanGuMi(String i,String n)
+	 {
+	 isnew=false;
+	 id=i;
+	 wd="周几";
+	 name=n;
+	 mtime="最后更新时间";
+	 new_name="最新一集标题";
+	 }*/
+	public BanGuMi()
+	{
+		isnew=false;
+        id=null;
+        wd=null;
+        name=null;
+        mtime=null;
+        new_name=null;
+	}
+	public void setisnew(Boolean isnew) {
+		if(isnew==true)this.isnew = true;
+		else this.isnew = false;
+	}  
+	public void setid(String id) {this.id = id;}  
+	public void setwd(String wd) {this.wd = wd;}  
+	public void setname(String name) {this.name = name;}  
+	public void setmtime(String mtime) {this.mtime = mtime;}  
+	public void setnew_name(String new_name) {this.new_name = new_name;}  
+
+
+    public boolean getisnew(){return isnew;}
+    public String getid(){return id;}
+    public String getid_8(){
+        String d;
+        if(id.length()<=8){d=id;}
+        else{d=id.substring(0,8);}
+        return d;}
+    public String getwd(){return wd;}
+    public String getname(){return name;}
+    public String getmtime(){return mtime;}
+    public String getnew_name(){return new_name;}
+	
 }

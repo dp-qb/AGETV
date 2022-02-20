@@ -47,8 +47,8 @@
 		<Button
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="新播放器测试"
-			android:onClick="neplay"
+			android:text="设置"
+			android:onClick="set"
 			android:background="@drawable/button_style"/>
 
 		<TextView

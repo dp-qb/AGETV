@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="设置">
+	<EditTextPreference
+		android:title="手动输入最新AGE-web域名(用于解析简介、分集、封面图、每周放送表、排行榜)"
+		android:dialogTitle="引号内是范例“https://www.agemys.com”"
+		android:key="web域名"
+    />
+	<Preference
+		android:title="使用备用web域名"
+		android:key="bt_web域名"> 
+	</Preference>
+	<EditTextPreference
+		android:title="手动输入最新AGE-app域名(用于解析视频播放源地址)"
+		android:dialogTitle="引号内是范例“https://web.age-spa.com:8443/#”"
+		android:key="app域名"
+    />
+	<Preference
+		android:title="尝试从app地址更新web域名"
+		android:key="key_app_web"> 
+	</Preference>
+	<CheckBoxPreference
+		android:title="显示调试信息"
+		android:key="key_debug" >
+	</CheckBoxPreference>
+	<Preference
+		android:title="调试内置浏览器"
+		android:key="key_web">
+		<intent  
+            android:action="android.intent.action.MAIN"  
+            android:targetPackage="com.age"  
+            android:targetClass="com.age.WebActivity" />  
+	</Preference>
+	<Preference
+		android:title="git页面"
+		android:key="key_git">
+		<!--根据data自动选择最合适的应用-->
+		<intent android:action="android.intent.action.VIEW"
+			android:data="https://github.com/dp-qb/AGETV"/>
+		<!--
+		"http://www.google.com"     //浏览器(网址必须带http)
+		"tel:1232333"             //拨号程序
+		"geo:39.899533,116.036476"//打开地图定位
+		-->
+		<!--可以通过<extra>传附加信息getIntent().getStringExtra("reused_key") -->
+		<extra
+			android:name="key"
+			android:value="value"/>
+	</Preference>
+</PreferenceScreen>
+

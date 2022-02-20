@@ -26,7 +26,7 @@ public class Radio extends RadioGroup {
             RadioButton rad_but=new RadioButton(context);
             rad_but.setText(s);
             rad_but.setId(View.generateViewId());
-            rad_but.setBackgroundResource(R.drawable.radio_style);
+            rad_but.setBackgroundResource(R.drawable.button_style);
             if(默认第一个勾选){
                 rad_but.setChecked(true);
                 默认第一个勾选=false;}

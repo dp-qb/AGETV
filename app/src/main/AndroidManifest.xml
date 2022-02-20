@@ -13,13 +13,32 @@
             android:name=".MainActivity"
             android:label="AGE"
 			android:configChanges="fontScale|keyboard|keyboardHidden|locale|orientation|screenLayout|uiMode">
-            <intent-filter>
+			<!--
+			“mcc“ 移动国家号码，由三位数字组成，每个国家都有自己独立的MCC，可以识别手机用户所属国家。
+			“mnc“ 移动网号，在一个国家或者地区中，用于区分手机用户的服务商。
+			“locale“ 所在地区发生变化。
+			“touchscreen“ 触摸屏已经改变。
+			“keyboard“ 键盘模式发生变化，例如：用户接入外部键盘输入。
+			“keyboardHidden“ 用户打开手机硬件键盘
+			“navigation“ 导航发生了变化。
+			“orientation“ 横竖屏切换。
+			“fontScale“ 全局字体大小缩放发生改变
+				-->
+			<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity 
-            android:name=".Player"
+            android:name=".SettingsActivity"
+			android:configChanges="fontScale|keyboard|keyboardHidden|locale|orientation|screenLayout|uiMode">
+        </activity>
+        <activity 
+            android:name=".WebActivity"
+			android:configChanges="fontScale|keyboard|keyboardHidden|locale|orientation|screenLayout|uiMode">
+        </activity>
+		<activity 
+            android:name=".TvPlayer"
 			android:configChanges="fontScale|keyboard|keyboardHidden|locale|orientation|screenLayout|uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.PLAYER" />
