@@ -32,7 +32,7 @@ public class TvPlayer extends Activity {
 	RadioGroup s设置列表;
 	MediaPlayer s视频控制器;
 	TextView t调试 ;
-	boolean b捕获链接 ,t调试开关 ,j检查旧链接=true;
+	boolean b捕获链接 ,y预加载下一集 ,t调试开关 ,j检查旧链接=true;
 	String t调试文本 ,web域名="https://www.agemys.com",
 	app域名="https://web.age-spa.com:8443/#";
     private Handler handler = new Handler();
@@ -56,19 +56,23 @@ public class TvPlayer extends Activity {
 				//int percent = videoView.getBufferPercentage();//获取缓冲百分比
 				//j进度条.setSecondaryProgress(percent*z总时长);//设置第二进度
 				//预加载下一集视频地址
-				if((z总时长-j进度)>30000)
+				if((z总时长-j进度)<30000)
 				{
-					String playids[]= playid.split("_");//切片 1_1
-					//getVideoUrl(app域名+"/play/" + id+"/"+playids[0]+"/"+playids[1]);
-					int id_y=Integer.parseInt(playids[1]);
-					id_y=id_y+1;
-					String new_playid=playids[0]+"_"+id_y;
-					String new_play_url=id数据持久化.getString(new_playid,null);
-					if(new_play_url==null)
-					{
-						debug("开始预加载下一集地址");
-						getVideoUrl(app域名+"/play/" + id+"/"+playids[0]+"/"+id_y,new_playid);
-					}
+				    if(y预加载下一集==true)
+					 {
+					 y预加载下一集=false;
+					 String playids[]= playid.split("_");//切片 1_1
+					 //getVideoUrl(app域名+"/play/" + id+"/"+playids[0]+"/"+playids[1]);
+					 int id_y=Integer.parseInt(playids[1]);
+					 id_y=id_y+1;
+					 String new_playid=playids[0]+"_"+id_y;
+					 String new_play_url=id数据持久化.getString(new_playid,null);
+					 if(new_play_url==null)
+					 {
+					 debug("开始预加载下一集地址");
+					 getVideoUrl(app域名+"/play/" + id+"/"+playids[0]+"/"+id_y,new_playid);
+					 }
+					 }
 				}
 			}
             handler.postDelayed(runnable, 500);
@@ -78,7 +82,7 @@ public class TvPlayer extends Activity {
 	{
 		if(t调试开关)
 		{
-			t调试文本+="\n"+log;
+		   t调试文本=log+"\n"+t调试文本;
 			t调试.setText(t调试文本);
 			t调试.setVisibility(View.VISIBLE);
 		}else t调试.setVisibility(View.GONE);
@@ -328,6 +332,7 @@ public class TvPlayer extends Activity {
 				public void onPrepared(MediaPlayer mp) {
 					s视频控制器 = mp;
 					video_url=url;
+				   y预加载下一集=true;
 					改变播放速度(id数据持久化.getFloat("倍速", 1.0f));
 					SharedPreferences.Editor editor = id数据持久化.edit();
 					editor.putString("id",id);
@@ -340,6 +345,9 @@ public class TvPlayer extends Activity {
 					j进度条总时间.setText(stringForTime(z总时长));
 					videoView.start();
 					t调试.setVisibility(View.GONE);
+				j进度条列表.setVisibility(View.GONE);
+				x选集列表.setVisibility(View.GONE);
+				s设置列表.setVisibility(View.GONE);
 					debug("当前以开启调试模式");
 					j进度条.setMax(z总时长);
 					j进度条.setKeyProgressIncrement(10000);//一次快进的进度

@@ -271,7 +271,8 @@ public class MainActivity extends Activity
 						jb.new_name = 数据持久化.getString("new_name", null);
 						grid.addView(newbutton(jb, 5));
 						//Toast.makeText(this,jb.id+":"+jb.wd+":"+jb.name+":"+jb.mtime+":"+jb.new_name, Toast.LENGTH_SHORT).show();
-					}
+					}else f.delete();
+					
 				}
 			}
 		}

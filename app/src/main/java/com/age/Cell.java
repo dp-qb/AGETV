@@ -22,6 +22,7 @@ import org.jsoup.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 import android.view.*;
+import android.preference.*;
 public class Cell extends FrameLayout
 {
     private View mView,bg;
@@ -162,23 +163,22 @@ public class Cell extends FrameLayout
 			//Toast.makeText(context,"从缓存中读到图片", Toast.LENGTH_SHORT).show();
 			Uri uri =Uri.fromFile(file);//Uri.fromFile(path)这个方法能得到文件的URI
 			ContentResolver cr = context.getContentResolver();
-			InputStream is =null;
             try
 			{
-				is = cr.openInputStream(uri);
-            }
-			catch (FileNotFoundException e)
-			{}
+			InputStream is = cr.openInputStream(uri);
 			if (is == null)Toast.makeText(context, "缓存图片读取失败：" + file, Toast.LENGTH_SHORT).show();
 			BitmapFactory.Options options = new BitmapFactory.Options();
 			options.inSampleSize = 1;//缩小图片，二的倍数，1/n
 			Bitmap bitmap = BitmapFactory.decodeStream(is, null, options);
 			Bitmap p= Bitmap.createScaledBitmap(bitmap, width - 20, (int)((width - 20) * 1.4), true);
 			img.setImageBitmap(p);
+			is.close();
+            }
+		catch (IOException e){}
 		}
 		else
 		{
-			//Toast.makeText(context, "从对照表中读取图片链接", Toast.LENGTH_SHORT).show();
+			//从对照表中读取图片链接并下载
 			SharedPreferences 数据持久化= context.getSharedPreferences("PIC", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
 			final String url=数据持久化.getString(id, "空");
 			if (url.length()>5)
@@ -189,80 +189,68 @@ public class Cell extends FrameLayout
 						{
 							try
 							{
-								//imgUrl = new URL(params[0]);
-								HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-								conn.setDoInput(true);
-								conn.connect();
-								InputStream is = conn.getInputStream();
-								Bitmap bitmap = BitmapFactory.decodeStream(is);
-								if (bitmap != null)
-								{
-									final Bitmap p= Bitmap.createScaledBitmap(bitmap, width - 20, (int)((width - 20) * 1.4), true);
-									img.post(new Runnable(){
-											public void run()
-											{
-												img.setImageBitmap(p);
-											}
-										});
-									File f = new File(context.getCacheDir(), id + ".jpg");
-									// 创建一个位于SD卡上的文件 
-									FileOutputStream fileOutStream=null; 
-									fileOutStream = new FileOutputStream(f); 
-									//把位图输出到指定的文件中 
-									bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutStream); 
-									fileOutStream.close(); 
-									is.close();
-								}
+							HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+							conn.setRequestMethod("GET");//设置请求方式为"GET"
+							conn.setConnectTimeout(5 * 1000);//超时响应时间为5秒
+							conn.connect();
+							InputStream is = conn.getInputStream();//通过输入流获取图片数据
+							final Bitmap bitmap = BitmapFactory.decodeStream(is);
+							is.close();
+							save_img(context,id + ".jpg",bitmap);
+							if (bitmap != null)
+							{
+								 img.post(new Runnable(){
+									public void run()
+									{
+										Bitmap p= Bitmap.createScaledBitmap(bitmap, width - 20, (int)((width - 20) * 1.4), true);
+										img.setImageBitmap(p);
+									}});
 							}
-							catch (IOException e)
-							{}
+						}
+						catch (IOException e){}
 						}
 					}).start();
 			}
 			else
 			{
-				//Toast.makeText(context, "从网页上下载图片", Toast.LENGTH_SHORT).show();
+				//从网页上下载图片
 				new Thread(new Runnable() {
 						@Override
 						public void run()
 						{
-							SharedPreferences sp数据持久化= context.getSharedPreferences("sp", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
-							String url = sp数据持久化.getString("域名","https://www.agefans.live")+"/detail/" + id;
+
+						SharedPreferences sp=PreferenceManager.getDefaultSharedPreferences(context);
+										String url = sp.getString("web域名", "https://www.agemys.com")+"/detail/" + id;
 							Connection con = Jsoup.connect(url);
 							Document doc = null;
 							try
 							{
-								doc = con.get();
-								Elements res_img = doc.select("img.poster");
-								String img_url=res_img.attr("abs:src");
-								if(!(img_url.startsWith("http"))){img_url="https:"+res_img.attr("src");}
-								//加https:
-								SharedPreferences 数据持久化= context.getSharedPreferences("PIC", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
-								SharedPreferences.Editor editor = 数据持久化.edit(); //实例化SharedPreferences.Editor对象（第二步）
-								editor.putString(id, img_url);//保存数据
-								editor.commit(); //提交当前数据 
-								HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-								conn.setDoInput(true);
-								conn.connect();
-								InputStream is = conn.getInputStream();
-								Bitmap bitmap = BitmapFactory.decodeStream(is);
-								if (bitmap != null)
-								{
-									final Bitmap p= Bitmap.createScaledBitmap(bitmap, width - 20, (int)((width - 20) * 1.4), true);
-									img.post(new Runnable(){
-											public void run()
-											{
-												img.setImageBitmap(p);
-											}
-										});
-									File file = new File(context.getCacheDir(), id + ".jpg");
-									// 创建一个位于SD卡上的文件 
-									FileOutputStream fileOutStream=null; 
-									fileOutStream = new FileOutputStream(file); 
-									//把位图输出到指定的文件中 
-									bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutStream); 
-									fileOutStream.close(); 
-									is.close();
+							doc = con.get();
+							Elements res_img = doc.select("img.poster");
+							String img_url=res_img.attr("abs:src");
+							if(!(img_url.startsWith("http"))){img_url="https:"+res_img.attr("src");}
+							//加https:
+							SharedPreferences 数据持久化= context.getSharedPreferences("PIC", Activity.MODE_PRIVATE); //实例化SharedPreferences对象（第一步）
+							SharedPreferences.Editor editor = 数据持久化.edit(); //实例化SharedPreferences.Editor对象（第二步）
+							editor.putString(id, img_url);//保存数据
+							editor.commit(); //提交当前数据 
+							HttpURLConnection conn = (HttpURLConnection) new URL(img_url).openConnection();
+							conn.setRequestMethod("GET");//设置请求方式为"GET"
+							conn.setConnectTimeout(5 * 1000);//超时响应时间为5秒
+							conn.connect();
+							conn.connect();
+							InputStream is = conn.getInputStream();
+							final Bitmap bitmap = BitmapFactory.decodeStream(is);
+							is.close();
+							save_img(context,id + ".jpg",bitmap);
+							if (bitmap != null)
+							{
+								img.post(new Runnable(){
+									public void run()
+									{
+									    Bitmap p= Bitmap.createScaledBitmap(bitmap, width - 20, (int)((width - 20) * 1.4), true);
+										img.setImageBitmap(p);
+									}});
 								}
 							}
 							catch (IOException e)
@@ -278,4 +266,16 @@ public class Cell extends FrameLayout
         else
 		{new_.setVisibility(View.GONE);}
     }
+	void save_img(Context context,String file_name,Bitmap img_bit)
+	{
+	File file = new File(context.getCacheDir(),file_name);
+	// 创建一个位于SD卡上的文件 
+	FileOutputStream fileOutStream=null; 
+	try{
+	fileOutStream=new FileOutputStream(file);
+	//把位图输出到指定的文件中 
+	img_bit.compress(Bitmap.CompressFormat.PNG, 100, fileOutStream); 
+	fileOutStream.close(); 
+	}catch(IOException e){} 
+	}
 }
